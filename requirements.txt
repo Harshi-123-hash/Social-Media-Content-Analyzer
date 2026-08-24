@@ -3,3 +3,6 @@ Pillow
 PyMuPDF
 pytesseract
 gunicorn
+scikit-learn
+PyPDF2
+python-dotenv
