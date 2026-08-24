@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Social Media Content Analyzer</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: min(1100px, 92%);
+            margin: 40px auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 34px;
+            margin-bottom: 10px;
+            color: #111827;
+        }
+
+        .header p {
+            color: #6b7280;
+            font-size: 16px;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+        }
+
+        .card h2 {
+            margin-bottom: 18px;
+            color: #111827;
+        }
+
+        .upload-box {
+            border: 2px dashed #9ca3af;
+            border-radius: 14px;
+            padding: 40px 25px;
+            text-align: center;
+            background: #fafafa;
+            transition: 0.2s ease;
+        }
+
+        .upload-box:hover {
+            border-color: #6366f1;
+            background: #f8f8ff;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .upload-box h3 {
+            margin-bottom: 8px;
+            font-size: 20px;
+        }
+
+        .upload-box p {
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .choose-button {
+            display: inline-block;
+            background: #4f46e5;
+            color: white;
+            padding: 12px 22px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s ease;
+        }
+
+        .choose-button:hover {
+            background: #4338ca;
+        }
+
+        .file-name {
+            margin-top: 15px;
+            color: #374151;
+            font-weight: 600;
+        }
+
+        .analyze-button {
+            width: 100%;
+            margin-top: 20px;
+            padding: 14px;
+            border: none;
+            border-radius: 9px;
+            background: #111827;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .analyze-button:hover {
+            background: #000000;
+        }
+
+        .error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .success {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            color: #047857;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .extracted-text {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 18px;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .score-container {
+            text-align: center;
+            padding: 25px;
+            background: #f9fafb;
+            border-radius: 14px;
+            margin-bottom: 22px;
+        }
+
+        .score {
+            font-size: 52px;
+            font-weight: 800;
+            color: #4f46e5;
+        }
+
+        .score-label {
+            color: #6b7280;
+            margin-top: 5px;
+        }
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .analysis-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 17px;
+            background: #ffffff;
+        }
+
+        .analysis-item .label {
+            display: block;
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 7px;
+        }
+
+        .analysis-item .value {
+            font-size: 17px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .present {
+            color: #059669 !important;
+        }
+
+        .missing {
+            color: #dc2626 !important;
+        }
+
+        .suggestions {
+            list-style: none;
+        }
+
+        .suggestions li {
+            position: relative;
+            padding: 14px 16px 14px 45px;
+            margin-bottom: 10px;
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 10px;
+            line-height: 1.5;
+        }
+
+        .suggestions li::before {
+            content: "💡";
+            position: absolute;
+            left: 15px;
+            top: 13px;
+        }
+
+        .hashtags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .hashtag {
+            display: inline-block;
+            padding: 9px 14px;
+            border-radius: 20px;
+            background: #eef2ff;
+            color: #4338ca;
+            font-weight: 700;
+            border: 1px solid #c7d2fe;
+        }
+
+        .hashtag-info {
+            color: #6b7280;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .improved-caption {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-left: 5px solid #4f46e5;
+            border-radius: 10px;
+            padding: 20px;
+            line-height: 1.8;
+            font-size: 16px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .footer {
+            text-align: center;
+            color: #9ca3af;
+            padding: 20px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 700px) {
+            .container {
+                width: 94%;
+                margin: 25px auto;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 27px;
+            }
+
+            .analysis-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .score {
+                font-size: 44px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- Header -->
+    <div class="header">
+        <h1>📱 Social Media Content Analyzer</h1>
+        <p>
+            Upload your social media post or reel content and get
+            actionable engagement improvements.
+        </p>
+    </div>
+
+
+    <!-- Upload Section -->
+    <div class="card">
+
+        <h2>📤 Upload Your Content</h2>
+
+        {% if error %}
+            <div class="error">
+                <strong>Analysis could not be completed</strong>
+                <br>
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <form
+            method="POST"
+            enctype="multipart/form-data"
+            id="uploadForm"
+        >
+
+            <div class="upload-box">
+
+                <div class="upload-icon">
+                    📄
+                </div>
+
+                <h3>
+                    Upload your post or reel
+                </h3>
+
+                <p>
+                    Supported formats:
+                    PDF, PNG, JPG, JPEG, WEBP and BMP
+                </p>
+
+                <label
+                    for="file"
+                    class="choose-button"
+                >
+                    Choose File
+                </label>
+
+                <input
+                    type="file"
+                    id="file"
+                    name="file"
+                    class="file-input"
+                    accept=".pdf,.png,.jpg,.jpeg,.webp,.bmp"
+                    required
+                >
+
+                <div
+                    id="fileName"
+                    class="file-name"
+                >
+                    No file selected
+                </div>
+
+            </div>
+
+            <button
+                type="submit"
+                class="analyze-button"
+                id="analyzeButton"
+            >
+                🔍 Analyze Content
+            </button>
+
+        </form>
+
+    </div>
+
+
+    {% if extracted_text %}
+
+    <!-- Extracted Text -->
+    <div class="card">
+
+        <div class="section-title">
+            <h2>📝 Extracted Content</h2>
+        </div>
+
+        <div class="extracted-text">
+{{ extracted_text }}
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    {% if result %}
+
+    <!-- Content Analysis -->
+    <div class="card">
+
+        <div class="section-title">
+            <h2>📊 Content Analysis</h2>
+        </div>
+
+        <!-- Engagement Score -->
+        <div class="score-container">
+
+            <div class="score">
+                {{ result.engagement_score }}/100
+            </div>
+
+            <div class="score-label">
+                Engagement Score
+            </div>
+
+        </div>
+
+
+        <!-- Analysis Details -->
+        <div class="analysis-grid">
+
+            <div class="analysis-item">
+
+                <span class="label">
+                    Caption Length
+                </span>
+
+                <span class="value">
+                    {{ result.caption_length }}
+                </span>
+
+            </div>
+
+
+            <div class="analysis-item">
+
+                <span class="label">
+                    Hashtags
+                </span>
+
+                <span class="value">
+                    {{ result.hashtag_count }} detected
+                </span>
+
+            </div>
+
+
+            <div class="analysis-item">
+
+                <span class="label">
+                    Call-to-action
+                </span>
+
+                {% if result.call_to_action %}
+
+                    <span class="value present">
+                        ✓ Present
+                    </span>
+
+                {% else %}
+
+                    <span class="value missing">
+                        ✗ Missing
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="analysis-item">
+
+                <span class="label">
+                    Question
+                </span>
+
+                {% if result.question %}
+
+                    <span class="value present">
+                        ✓ Present
+                    </span>
+
+                {% else %}
+
+                    <span class="value missing">
+                        ✗ Missing
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="analysis-item">
+
+                <span class="label">
+                    Sentiment
+                </span>
+
+                <span class="value">
+                    {{ result.sentiment }}
+                </span>
+
+            </div>
+
+
+            <div class="analysis-item">
+
+                <span class="label">
+                    Word Count
+                </span>
+
+                <span class="value">
+                    {{ result.word_count }}
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Suggestions -->
+    <div class="card">
+
+        <div class="section-title">
+            <h2>💡 Suggestions</h2>
+        </div>
+
+        {% if result.suggestions %}
+
+            <ul class="suggestions">
+
+                {% for suggestion in result.suggestions %}
+
+                    <li>
+                        {{ suggestion }}
+                    </li>
+
+                {% endfor %}
+
+            </ul>
+
+        {% else %}
+
+            <p>
+                Your content is already well optimized.
+            </p>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- Context-Aware Hashtags -->
+    <div class="card">
+
+        <div class="section-title">
+            <h2>🏷️ Suggested Hashtags</h2>
+        </div>
+
+        <p class="hashtag-info">
+            These hashtags are generated based on the actual
+            content of your uploaded post.
+        </p>
+
+        {% if result.hashtags %}
+
+            <div class="hashtags">
+
+                {% for hashtag in result.hashtags %}
+
+                    <span class="hashtag">
+                        {{ hashtag }}
+                    </span>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <p>
+                No relevant hashtags could be generated.
+            </p>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- Improved Caption -->
+    <div class="card">
+
+        <div class="section-title">
+            <h2>✨ Improved Caption</h2>
+        </div>
+
+        <div class="improved-caption">
+{{ result.improved_caption }}
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    <div class="footer">
+        Social Media Content Analyzer
+    </div>
+
+</div>
+
+
+<script>
+
+    const fileInput = document.getElementById("file");
+    const fileName = document.getElementById("fileName");
+    const uploadForm = document.getElementById("uploadForm");
+    const analyzeButton = document.getElementById("analyzeButton");
+
+
+    /*
+     * Display the selected filename.
+     */
+    fileInput.addEventListener("change", function () {
+
+        if (fileInput.files.length > 0) {
+
+            fileName.textContent =
+                "Selected: " + fileInput.files[0].name;
+
+        } else {
+
+            fileName.textContent =
+                "No file selected";
+
+        }
+
+    });
+
+
+    /*
+     * Show a loading state while Flask processes
+     * PDF extraction / OCR / content analysis.
+     */
+    uploadForm.addEventListener("submit", function () {
+
+        if (!fileInput.files.length) {
+            return;
+        }
+
+        analyzeButton.disabled = true;
+
+        analyzeButton.textContent =
+            "⏳ Extracting and analyzing...";
+
+    });
+
+</script>
+
+</body>
+</html>
